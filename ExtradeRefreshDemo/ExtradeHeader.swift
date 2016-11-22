@@ -108,6 +108,7 @@ class ExtradeHeader: UIView {
         moveRadius = maxRadius
         exHeight = frame.height
         super.init(frame: frame)
+        backgroundColor = UIColor.groupTableViewBackground
         setup()
     }
     deinit {
@@ -163,7 +164,7 @@ class ExtradeHeader: UIView {
         msgLayer.frame = CGRect(x: 0, y: 0, width: msgView.frame.height, height: msgView.frame.height)
         msgLayer.strokeColor = #colorLiteral(red: 0.2549019754, green: 0.2745098174, blue: 0.3019607961, alpha: 1).cgColor
         msgLayer.fillColor = UIColor.clear.cgColor
-        let radius: CGFloat = msgLayer.frame.height / 2
+        let radius: CGFloat = msgLayer.frame.height / 2  * 0.8
         let center = CGPoint(x: msgLayer.frame.width / 2, y: msgLayer.frame.height / 2)
         let point1 = CGPoint(x: center.x - radius * 0.6, y: center.y)
         let point2 = CGPoint(x: center.x - radius * 0.2, y: center.y + radius * 0.4)
@@ -226,41 +227,45 @@ class ExtradeHeader: UIView {
         if keyPath == "contentOffset" {
             let offsetY = scrollView?.contentOffset.y
             let offset = abs(offsetY! + exHeight)
-            if offsetY! <= -exHeight {
-                frame = CGRect(x: 0, y: -(offset + exHeight), width: frame.width, height: offset + exHeight)
-            } else {
-                reSetpath()
-            }
-            if (scrollView?.isDragging)! {
-                if state != .refreshing {
-                    if offset >= moveDistance {
-                        if state == .pullToRefresh {
-                            state = .refreshing
-                        }
-                    } else {
-                        guard offsetY! <= -exHeight else {
-                            return
-                        }
-                        state = .pullToRefresh
-                        setPath(offset: offset)
-                    }
-                    
-                }
-                
-            } else {
-                if state == .refreshing {
-                    UIView .animate(withDuration: 0.35, animations: {
-                        self.scrollView?.contentInset.top = self.exHeight
-                        
-                    })
-                    
+            if offsetY! <= 0 {
+                if offsetY! <= -exHeight {
+                    frame = CGRect(x: 0, y: -(offset + exHeight), width: frame.width, height: offset + exHeight)
                 } else {
                     reSetpath()
                 }
-                if offsetY == 0 && isReset {
-                    state = .nomal
+                if (scrollView?.isDragging)! {
+                    if state != .refreshing {
+                        if offset >= moveDistance {
+                            if state == .pullToRefresh {
+                                state = .refreshing
+                            }
+                        } else {
+                            guard offsetY! <= -exHeight else {
+                                return
+                            }
+                            state = .pullToRefresh
+                            setPath(offset: offset)
+                        }
+                        
+                    }
+                    
+                } else {
+                    if state == .refreshing {
+                        UIView .animate(withDuration: 0.35, animations: {
+                            self.scrollView?.contentInset.top = self.exHeight
+                            
+                        })
+                        
+                    } else {
+                        reSetpath()
+                    }
+                    if offsetY == 0 && isReset {
+                        state = .nomal
+                    }
                 }
+
             }
+           
             
         } else if keyPath == "contentSize" {
             frame = CGRect(x: frame.minX, y: frame.minY, width: frame.width, height: exHeight)
